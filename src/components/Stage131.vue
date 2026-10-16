@@ -67,10 +67,10 @@ export default {
   methods: {
     async compile() {
       try {
-        const response = await axios.post('http://localhost:5173/compile', { code: this.cppCode });
+        const response = await axios.post('/compile', { code: this.cppCode });
         this.asmCode = response.data;
       } catch (error) {
-        console.error(error);
+        this.asmCode = error.response?.data?.error || '编译服务不可用，请确认本地服务已启动。';
       }
     }
   }

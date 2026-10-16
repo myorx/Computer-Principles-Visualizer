@@ -1,47 +1,51 @@
-const express = require('express');
-const { exec } = require('child_process');
-const app = express();
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+const express = require('express')
+const { execFile } = require('node:child_process')
+const { promisify } = require('node:util')
+const { mkdtemp, readFile, rm, writeFile } = require('node:fs/promises')
+const { tmpdir } = require('node:os')
+const path = require('node:path')
 
-app.use(cors());
-app.use(express.json());
+const app = express()
+const runCompiler = promisify(execFile)
+const port = Number(process.env.PORT) || 3001
 
-app.post('/compile', (req, res) => {
-    const code = req.body.code;
+app.use(express.json({ limit: '64kb' }))
 
-    // 将代码写入一个临时文件
-    fs.writeFileSync('main.cpp', code);
+app.post('/compile', async (req, res) => {
+  const code = req.body?.code
+  if (typeof code !== 'string' || !code.trim()) {
+    return res.status(400).json({ error: '请输入 C++ 代码。' })
+  }
 
-    // 使用 g++ 编译代码
-    exec('g++ -S main.cpp', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`stderr: ${stderr}`);
-            return;
-        }
+  let workDir
+  try {
+    workDir = await mkdtemp(path.join(tmpdir(), 'computer-principles-'))
+    await writeFile(path.join(workDir, 'main.cpp'), code, 'utf8')
+    await runCompiler('g++', ['-S', '-o', 'main.s', 'main.cpp'], {
+      cwd: workDir,
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+      windowsHide: true
+    })
+    const assembly = await readFile(path.join(workDir, 'main.s'), 'utf8')
+    res.type('text/plain').send(assembly)
+  } catch (error) {
+    const message = error.code === 'ENOENT'
+      ? '未找到 g++，请先安装 GCC 并将其加入 PATH。'
+      : (error.stderr || error.message || '编译失败。').slice(0, 4000)
+    res.status(422).json({ error: message })
+  } finally {
+    if (workDir) {
+      await rm(workDir, { recursive: true, force: true })
+    }
+  }
+})
 
-        // 读取编译生成的汇编代码
-        const asm = fs.readFileSync('main.s', 'utf8');
-
-        // 将汇编代码发送回客户端
-        res.send(asm);
-    });
-});
-
-// 提供 Vue 应用的静态文件
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// 处理所有 GET 请求
+app.use(express.static(path.join(__dirname, 'dist')))
 app.get('*', (req, res) => {
-    // 将请求重定向到 Vue 应用
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
 
-app.listen(5173, () => {
-    console.log('Server is running on port 5173');
-});
+app.listen(port, '127.0.0.1', () => {
+  console.log(`Local server: http://127.0.0.1:${port}`)
+})

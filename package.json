@@ -1,29 +1,28 @@
 {
-  "name": "test",
-  "version": "0.0.0",
+  "name": "computer-principles-visualizer",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server.cjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.cjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.6.8",
-    "body-parser": "^1.20.2",
-    "child_process": "^1.0.2",
-    "cors": "^2.8.5",
     "element-plus": "^2.6.1",
     "express": "^4.19.2",
-    "jsmind": "^0.8.3",
-    "util": "^0.12.5",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
-    "vue3-mindmap": "^0.5.12"
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "vite": "^5.1.5"
+    "@vitejs/plugin-vue": "^6.0.10",
+    "vite": "^8.3.4"
   }
 }

@@ -83,7 +83,7 @@
         <router-link to="/" style="text-decoration: none;">
           <div class="title"> 
             <img  src="./assets/logo.png" style= "height : 50px; width : 50px;"/>
-            <h1 style="font-size: 20px;"> 程序设计大作业 </h1>
+            <h1 style="font-size: 20px;">计算机原理可视化</h1>
           </div>  
         </router-link>
       </el-header>
@@ -92,7 +92,7 @@
         <router-view> </router-view>
       </el-main>
       <el-footer>
-        <p style="text-align: center;"> 制作人：毛洋洋</p>
+        <p style="text-align: center;">交互式计算机原理学习</p>
       </el-footer>
     </el-container>
   </el-container>
